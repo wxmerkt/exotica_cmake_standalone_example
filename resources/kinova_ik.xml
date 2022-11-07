@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+<ExampleConfig>
+  <IKSolver Name="MySolver">
+    <!-- Important: We want to limit IK to one iteration with a max step that is equivalent to the velocity limit at the given dt -->
+    <!-- E.g. 0.6rad/s and 10 Hz => 0.06 rad/ik -->
+    <MaxStep>0.06</MaxStep>
+    <MaxIterations>1</MaxIterations>
+    <RegularizationRate>1e-1</RegularizationRate>
+  </IKSolver>
+
+  <UnconstrainedEndPoseProblem Name="MyProblem">
+    <PlanningScene>
+      <Scene>
+        <JointGroup>arm</JointGroup>
+        <!-- <URDF>{package_name}/resources/j1n6srobotiq.urdf</URDF>
+        <SRDF>{package_name}/resources/j1n6srobotiq.srdf</SRDF> -->
+        <URDF>j1n6srobotiq.urdf</URDF>
+        <SRDF>j1n6srobotiq.srdf</SRDF>
+        <!-- <SetRobotDescriptionRosParams>1</SetRobotDescriptionRosParams> -->
+        <DoNotInstantiateCollisionScene>1</DoNotInstantiateCollisionScene>
+        <!-- <CollisionScene>
+          <CollisionSceneFCLLatest Name="MyCollisionScene"/>
+        </CollisionScene>
+        <AlwaysUpdateCollisionScene>1</AlwaysUpdateCollisionScene> -->
+        <Links>
+          <Link Name="Target"/>
+        </Links>
+      </Scene>
+    </PlanningScene>
+
+    <Maps>
+      <EffFrame Name="Position">
+        <EndEffector>
+          <Frame Link="end_effector" Base="Target" LinkOffset="0 0 0 0 1 0 0"/>
+        </EndEffector>
+      </EffFrame>
+
+      <JointLimit Name="JL"/>
+
+      <!-- Encourage continuous joint to be centred -->
+      <JointPose Name="ContinuousJointRegularisation">
+        <JointMap>1 3 4 5</JointMap>
+        <JointRef>0 0 0 0</JointRef>
+      </JointPose>
+
+      <SmoothCollisionDistance Name="Collision">
+        <CheckSelfCollision>1</CheckSelfCollision>
+        <WorldMargin>0.01</WorldMargin>
+        <RobotMargin>0.02</RobotMargin>
+      </SmoothCollisionDistance>
+
+      <JointPose Name="Regularisation">
+      </JointPose>
+    </Maps>
+
+    <Cost>
+      <Task Task="JL" Rho="1e2"/>
+      <Task Task="ContinuousJointRegularisation" Rho="1e-3"/>
+
+      <Task Task="Position" Rho="1e3"/>
+
+      <!-- <Task Task="Collision" Rho="1e1"/> -->
+
+      <Task Task="Regularisation" Rho="1e-3"/>
+    </Cost>
+    <!-- <W>
+      6 5 4 3 2 1
+    </W> -->
+  </UnconstrainedEndPoseProblem>
+</ExampleConfig>
